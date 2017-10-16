@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: wit-db
+  labels:
+    service: wit-db
+spec:
+  ports:
+    - name: "postgres"
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+  selector:
+    service: wit-db
+  type: ClusterIP

@@ -1,0 +1,10 @@
+metadata:
+  namespace: nginx-ingress
+  name: default-backend
+  annotations:
+    fabric8.io/target-platform: "kubernetes"
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080

@@ -1,0 +1,7 @@
+metadata:
+  annotations:
+    haproxy.router.openshift.io/timeout: "10m"
+spec:
+  to:
+    kind: Service
+    name: "forge"

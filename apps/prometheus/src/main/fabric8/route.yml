@@ -1,0 +1,6 @@
+metadata:
+  namespace: fabric8-metrics
+spec:
+  to:
+    kind: Service
+    name: "prometheus"

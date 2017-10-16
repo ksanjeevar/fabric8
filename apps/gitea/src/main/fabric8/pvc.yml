@@ -1,0 +1,8 @@
+metadata:
+  name: gitea-data
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

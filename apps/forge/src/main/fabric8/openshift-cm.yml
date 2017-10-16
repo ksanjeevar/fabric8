@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: forge
+  annotations:
+    fabric8.io/target-platform: "openshift"
+    expose.config.fabric8.io/apiserver-url-key: apiserver.url
+    expose.service-key.config.fabric8.io/keycloak: keycloak.url
+data:
+  keycloak.url: http://keycloak
+  wit.url: http://wit
+  apiserver.url: http://kubernetes

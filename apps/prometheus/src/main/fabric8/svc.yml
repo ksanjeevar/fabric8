@@ -1,0 +1,10 @@
+metadata:
+  namespace: fabric8-metrics
+  labels:
+    expose: "true"
+spec:
+  ports:
+  - name: "http"
+    port: 80
+    protocol: "TCP"
+    targetPort: 9090

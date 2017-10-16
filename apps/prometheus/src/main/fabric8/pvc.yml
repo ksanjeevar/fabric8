@@ -1,0 +1,9 @@
+metadata:
+  name: prometheus
+  namespace: fabric8-metrics
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

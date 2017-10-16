@@ -1,0 +1,157 @@
+metadata:
+  name: auth
+  labels:
+    service: auth
+  annotations:
+    configmap.fabric8.io/update-on-change: "auth"
+spec:
+  replicas: 1
+  selector:
+    service: auth
+  template:
+    metadata:
+      annotations:
+        pod.beta.kubernetes.io/init-containers: |-
+          [
+          {
+            "name": "wait-for-auth-db",
+            "image": "fabric8/fabric8-dependency-wait-service:${dependency-wait-service.version}",
+            "imagePullPolicy": "IfNotPresent",
+            "command": ["sh", "-c", "fabric8-dependency-wait-service-linux-amd64 postgres://auth@auth-db:5432"],
+            "env": [{
+              "name": "DEPENDENCY_POLL_INTERVAL",
+              "value": "1"
+            }, {
+              "name": "DEPENDENCY_LOG_VERBOSE",
+              "value": "true"
+            }]
+          },
+          {
+            "name": "wait-for-keycloak",
+            "image": "fabric8/fabric8-dependency-wait-service:${dependency-wait-service.version}",
+            "imagePullPolicy": "IfNotPresent",
+            "command": ["sh", "-c", "fabric8-dependency-wait-service-linux-amd64 http://keycloak:80"],
+            "env": [{
+              "name": "DEPENDENCY_POLL_INTERVAL",
+              "value": "1"
+            }, {
+              "name": "DEPENDENCY_LOG_VERBOSE",
+              "value": "true"
+            }]
+          }]
+      labels:
+        service: auth
+    spec:
+      containers:
+      - image: fabric8/fabric8-auth:${auth.version}
+        env:
+        - name: AUTH_POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: auth
+              key: db.user
+        - name: AUTH_POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: auth
+              key: db.password
+        - name: AUTH_KEYCLOAK_REALM
+          valueFrom:
+            secretKeyRef:
+              name: auth
+              key: keycloak.realm
+        - name: AUTH_TOKEN_PUBLICKEY
+          valueFrom:
+            secretKeyRef:
+              name: auth
+              key: token.publickey
+        - name: AUTH_KEYCLOAK_URL
+          valueFrom:
+            configMapKeyRef:
+              name: auth
+              key: keycloak.url
+        - name: AUTH_WIT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: auth
+              key: wit.url
+        - name: AUTH_KEYCLOAK_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth
+              key: keycloak.secret
+        - name: AUTH_POSTGRES_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: auth
+              key: db.host
+        - name: AUTH_POSTGRES_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: auth
+              key: db.port
+        - name: AUTH_POSTGRES_SSLMODE
+          valueFrom:
+            configMapKeyRef:
+              name: auth
+              key: postgres.sslmode
+        - name: AUTH_POSTGRES_CONNECTION_MAXIDLE
+          valueFrom:
+            configMapKeyRef:
+              name: auth
+              key: postgres.connection.maxidle
+        - name: AUTH_POSTGRES_CONNECTION_MAXOPEN
+          valueFrom:
+            configMapKeyRef:
+              name: auth
+              key: postgres.connection.maxopen
+        - name: AUTH_AUTH_NOTAPPROVED_REDIRECT
+          valueFrom:
+            configMapKeyRef:
+              name: auth
+              key: auth_notapproved_redirect
+        - name: AUTH_TENANT_SERVICEURL
+          valueFrom:
+            secretKeyRef:
+              name: auth
+              key: tenantsvc.url
+        - name: AUTH_CHESTARTERURL
+          valueFrom:
+            configMapKeyRef:
+              name: auth
+              key: chestarter.url
+        - name: AUTH_REDIRECT_VALID
+          valueFrom:
+            configMapKeyRef:
+              name: auth
+              key: redirect.valid
+        - name: AUTH_OPENSHIFT_TENANT_MASTERURL
+          valueFrom:
+            configMapKeyRef:
+              name: auth
+              key: openshift.tenant.masterurl
+        imagePullPolicy: IfNotPresent
+        name: auth
+        ports:
+        - containerPort: 8089
+          protocol: TCP
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /api/status
+            port: 8089
+            scheme: HTTP
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /api/status
+            port: 8089
+            scheme: HTTP
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1

@@ -1,0 +1,57 @@
+metadata:
+  name: nginx-ingress
+  namespace: nginx-ingress
+  annotations:
+    fabric8.io/target-platform: "kubernetes"
+    configmap.fabric8.io/update-on-change: "nginx-config"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  template:
+    metadata:
+      labels:
+        k8s-app: nginx-ingress-lb
+    spec:
+      terminationGracePeriodSeconds: 60
+      serviceAccount: nginx-ingress-serviceaccount
+      containers:
+        - name: nginx-ingress-controller
+          image: gcr.io/google_containers/nginx-ingress-controller:0.9.0-beta.11
+          imagePullPolicy: Always
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 18080
+              scheme: HTTP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 18080
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+          args:
+            - /nginx-ingress-controller
+            - --default-backend-service=$(POD_NAMESPACE)/default-backend
+            - --configmap=$(POD_NAMESPACE)/nginx-ingress
+            - --publish-service=$(POD_NAMESPACE)/nginx-ingress
+          # Use downward API
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+            - containerPort: 80
+            - containerPort: 443
+          volumeMounts:
+          - name: nginx-tmpl
+            mountPath: /etc/nginx/template
+      volumes:
+      - name: nginx-tmpl
+        configMap:
+          name: nginx-tmpl

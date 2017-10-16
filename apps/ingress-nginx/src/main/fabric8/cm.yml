@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-ingress
+  namespace: nginx-ingress
+  annotations:
+    fabric8.io/target-platform: "kubernetes"
+data:
+  enable-vts-status: "false"
+  use-proxy-protocol: "false"
